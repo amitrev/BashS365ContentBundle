@@ -1,0 +1,6 @@
+s365_content_proxy:
+    path: /{endpoint}
+    controller: Bash\S365ContentBundle\Infrastructure\Symfony\Controller\ContentProxyController
+    methods: [GET, POST, PUT, DELETE]
+    requirements:
+        endpoint: ".+"

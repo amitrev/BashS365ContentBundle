@@ -1,0 +1,28 @@
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+        public: false
+
+    Bash\S365ContentBundle\Infrastructure\Symfony\Controller\:
+        resource: '../../Infrastructure/Symfony/Controller/'
+        public: true
+        tags: ['controller.service_arguments']
+
+    Bash\S365ContentBundle\Infrastructure\HttpClient\ContentAuthenticator:
+        arguments:
+            $cache: '@cache.app'
+            $baseUrl: '%env(string:S365_CONTENT_API_URL)%'
+            $username: '%env(string:S365_CONTENT_API_USER)%'
+            $password: '%env(string:S365_CONTENT_API_PASSWORD)%'
+            $clientId: '%env(string:S365_CONTENT_API_CLIENT_ID)%'
+            $clientSecret: '%env(string:S365_CONTENT_API_CLIENT_SECRET)%'
+            $ttlCachedToken: '%env(int:S365_CONTENT_API_TTL_CACHED_TOKEN)%'
+
+    Bash\S365ContentBundle\Infrastructure\HttpClient\ContentClient:
+        arguments:
+            $baseUrl: '%env(string:S365_CONTENT_API_URL)%'
+            $project: '%env(string:S365_CONTENT_API_PROJECT)%'
+            $disableCache: '%env(bool:S365_CONTENT_API_DISABLE_CACHE)%'
+        tags:
+            - { name: monolog.logger, channel: s365_content }
