@@ -31,21 +31,23 @@ S365_CONTENT_API_TTL_CACHED_TOKEN=2592000
 ###< BASH S365 CONTENT BUNDLE ###
 ```
 
-### 2. Install the Package
+### 2. Manual Configuration
+
+Since this bundle does not use a public Flex recipe, you must create the configuration files manually. You can find templates in the `recipe/` directory of this bundle.
+
+#### A. Create Service Configuration (Required)
+
+Copy the `recipe/config/packages/s365_content.yaml` file to your project's `config/packages/s365_content.yaml`.
+
+#### B. Create Routing Configuration (Optional)
+
+If you want to use the proxy controller, copy the `recipe/config/routes/s365_content.yaml` file to your project's `config/routes/s365_content.yaml` and adjust the prefix if needed.
+
+### 3. Install the Package
 
 Simply run:
 ```bash
 composer require bash/s365-content-bundle
-```
-
-### 3. Register Routes (Proxy Support)
-
-To enable the transparent proxy, add the following to `config/routes.yaml`:
-
-```yaml
-s365_content:
-  resource: '@S365ContentBundle/src/Resources/config/routes.yaml'
-  prefix: '/s365/content/api'
 ```
 
 ## Usage

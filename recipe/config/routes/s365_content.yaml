@@ -1,0 +1,3 @@
+s365_content:
+  resource: '@S365ContentBundle/src/Resources/config/routes.yaml'
+  prefix: '/s365/proxy'

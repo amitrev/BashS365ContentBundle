@@ -1,0 +1,9 @@
+s365_content:
+  base_url: '%env(S365_CONTENT_API_URL)%'
+  username: '%env(S365_CONTENT_API_USER)%'
+  password: '%env(S365_CONTENT_API_PASSWORD)%'
+  client_id: '%env(S365_CONTENT_API_CLIENT_ID)%'
+  client_secret: '%env(S365_CONTENT_API_CLIENT_SECRET)%'
+  project: '%env(S365_CONTENT_API_PROJECT)%'
+  disable_cache: '%env(bool:S365_CONTENT_API_DISABLE_CACHE)%'
+  ttl_token: '%env(int:S365_CONTENT_API_TTL_CACHED_TOKEN)%'
