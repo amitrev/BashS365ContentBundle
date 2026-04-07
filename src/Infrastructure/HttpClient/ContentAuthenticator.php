@@ -8,6 +8,10 @@ use Bash\S365ContentBundle\Domain\Exception\S365AuthenticationContentException;
 use Psr\Cache\InvalidArgumentException;
 use Symfony\Contracts\Cache\CacheInterface;
 use Symfony\Contracts\Cache\ItemInterface;
+use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\DecodingExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
@@ -18,7 +22,6 @@ final readonly class ContentAuthenticator
     public function __construct(
         private HttpClientInterface $httpClient,
         private CacheInterface $cache,
-        private string $baseUrl,
         private string $username,
         private string $password,
         private string $clientId,
@@ -48,11 +51,11 @@ final readonly class ContentAuthenticator
     /**
      * @return array{access_token: string, expires_in?: int}
      *
-     * @throws TransportExceptionInterface
+     * @throws TransportExceptionInterface|ClientExceptionInterface|DecodingExceptionInterface|RedirectionExceptionInterface|ServerExceptionInterface|TransportExceptionInterface
      */
     private function fetchNewToken(): array
     {
-        $response = $this->httpClient->request('POST', $this->baseUrl.'/oauth/token', [
+        $response = $this->httpClient->request('POST', '/oauth/token', [
             'body' => [
                 'grant_type' => 'password',
                 'client_id' => $this->clientId,

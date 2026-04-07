@@ -44,7 +44,7 @@ class ContentAuthenticatorExtraTest extends TestCase
         $authenticator = new ContentAuthenticator(
             $httpClient,
             $cache,
-            'https://api.test', 'user', 'pass', 'id', 'secret',
+            'user', 'pass', 'id', 'secret',
         );
 
         $token1 = $authenticator->getToken();
@@ -85,7 +85,7 @@ class ContentAuthenticatorExtraTest extends TestCase
         $authenticator = new ContentAuthenticator(
             $httpClient,
             $cache,
-            'https://api.test', 'user', 'pass', 'id', 'secret',
+            'user', 'pass', 'id', 'secret',
         );
 
         $token1 = $authenticator->getToken();
@@ -107,7 +107,7 @@ class ContentAuthenticatorExtraTest extends TestCase
         $authenticator = new ContentAuthenticator(
             $httpClient,
             $cache,
-            'https://api.test', 'user', 'pass', 'id', 'secret',
+            'user', 'pass', 'id', 'secret',
         );
 
         $this->expectException(S365AuthenticationContentException::class);

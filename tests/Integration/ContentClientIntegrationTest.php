@@ -31,8 +31,8 @@ class ContentClientIntegrationTest extends TestCase
         $cache = new ArrayAdapter();
         $logger = $this->createMock(LoggerInterface::class);
 
-        $authenticator = new ContentAuthenticator($httpClient, $cache, $apiUrl, 'u', 'p', 'id', 'secret');
-        $client = new ContentClient($httpClient, $authenticator, $logger, $apiUrl, 'proj', false);
+        $authenticator = new ContentAuthenticator($httpClient, $cache, 'u', 'p', 'id', 'secret');
+        $client = new ContentClient($httpClient, $authenticator, $logger, 'proj', false);
 
         $response = $client->forward('GET', 'articles');
 

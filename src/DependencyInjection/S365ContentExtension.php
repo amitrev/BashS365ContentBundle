@@ -40,12 +40,10 @@ class S365ContentExtension extends Extension
         $config = $this->processConfiguration($configuration, $configs);
 
         $definition = $container->getDefinition(ContentClient::class);
-        $definition->setArgument('$baseUrl', $config['base_url']);
         $definition->setArgument('$project', $config['project']);
         $definition->setArgument('$disableCache', $config['disable_cache']);
 
         $authDefinition = $container->getDefinition(ContentAuthenticator::class);
-        $authDefinition->setArgument('$baseUrl', $config['base_url']);
         $authDefinition->setArgument('$username', $config['username']);
         $authDefinition->setArgument('$password', $config['password']);
         $authDefinition->setArgument('$clientId', $config['client_id']);

@@ -50,12 +50,12 @@ class ContentClientTest extends TestCase
         $authenticator = new ContentAuthenticator(
             $authHttpClient,
             $cache,
-            'https://api.test', 'user', 'pass', 'id', 'secret',
+            'user', 'pass', 'id', 'secret',
         );
 
         $logger = $this->createMock(LoggerInterface::class);
 
-        $client = new ContentClient($contentHttpClient, $authenticator, $logger, 'https://api.test', 'proj', false);
+        $client = new ContentClient($contentHttpClient, $authenticator, $logger, 'proj', false);
 
         $s365Response = $client->forward('GET', 'endpoint', [], 'cid-1');
 

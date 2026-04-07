@@ -17,7 +17,6 @@ final readonly class ContentClient implements ContentClientInterface
         private HttpClientInterface $httpClient,
         private ContentAuthenticator $authenticator,
         #[Target('s365_content')] private LoggerInterface $logger,
-        private string $baseUrl,
         private string $project,
         private bool $disableCache,
     ) {
@@ -29,7 +28,6 @@ final readonly class ContentClient implements ContentClientInterface
     public function forward(string $method, string $url, array $options = [], ?string $correlationId = null): S365Response
     {
         $defaultOptions = [
-            'base_uri' => $this->baseUrl,
             'auth_bearer' => $this->authenticator->getToken(),
             'headers' => [
                 'Project' => $this->project,
@@ -62,7 +60,7 @@ final readonly class ContentClient implements ContentClientInterface
                 $response->getHeaders(false),
             );
         } catch (\Throwable $e) {
-            $this->logger->error('S365 API Transport Error', ['url' => $url, 'error' => $e->getMessage()]);
+            $this->logger->error('S365 API Transport Error', ['url' => $url, 'correlation_id' => $correlationId, 'error' => $e->getMessage()]);
             throw new S365CommunicationException('Transport error for '.$url, 0, $e);
         }
     }

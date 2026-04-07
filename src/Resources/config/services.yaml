@@ -4,15 +4,34 @@ services:
         autoconfigure: true
         public: false
 
+    s365_content.http_client:
+        parent: http_client
+        factory: ['Symfony\Component\HttpClient\ScopingHttpClient', 'forBaseUri']
+        arguments:
+            $client: '@http_client'
+            $baseUri: '%env(string:S365_CONTENT_API_URL)%'
+            $defaultOptions:
+                timeout: 10
+                retry_failed:
+                    max_retries: 3
+                    http_codes: [429, 500, 502, 503, 504]
+                    methods: ['GET']
+                    delay: 1000
+                    multiplier: 2
+                    jitter: 0.1
+
     Bash\S365ContentBundle\Domain\HttpClient\ContentClientInterface:
         alias: Bash\S365ContentBundle\Infrastructure\HttpClient\ContentClient
 
     Bash\S365ContentBundle\Infrastructure\HttpClient\ContentClient:
+        arguments:
+            $httpClient: '@s365_content.http_client'
         tags:
             - { name: monolog.logger, channel: s365_content }
 
     Bash\S365ContentBundle\Infrastructure\HttpClient\ContentAuthenticator:
         arguments:
+            $httpClient: '@s365_content.http_client'
             $cache: '@cache.app'
 
     Bash\S365ContentBundle\Infrastructure\Symfony\Controller\:
