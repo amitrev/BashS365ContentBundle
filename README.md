@@ -3,7 +3,7 @@
 - PHP 8.2+
 - Symfony 7.4
 
-This bundle provides a robust, DDD-oriented integration for the Sportal365 Content API. It supports both direct API interaction and transparent request forwarding (proxying).
+This bundle provides a robust, DDD-oriented integration for the S365 Content API. It supports both direct API interaction and transparent request forwarding (proxying).
 
 ## Features
 
@@ -85,7 +85,7 @@ class NewsController extends AbstractController
 
 ### Using Correlation IDs for Traceability
 
-To maintain end-to-end traceability, you can pass your application's Correlation ID to the client. This ID will be sent to Sportal365 via the `X-Correlation-ID` header.
+To maintain end-to-end traceability, you can pass your application's Correlation ID to the client. This ID will be sent to S365 via the `X-Correlation-ID` header.
 ```php
 
 // Inside your service or controller
