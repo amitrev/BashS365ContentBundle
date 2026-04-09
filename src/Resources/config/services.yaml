@@ -5,6 +5,7 @@ services:
         public: false
 
     s365_content.http_client:
+        class: Symfony\Component\HttpClient\ScopingHttpClient
         factory: ['Symfony\Component\HttpClient\ScopingHttpClient', 'forBaseUri']
         arguments:
             $client: '@http_client'
