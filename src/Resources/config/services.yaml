@@ -7,6 +7,7 @@ services:
     s365_content.http_client:
         class: Symfony\Component\HttpClient\ScopingHttpClient
         factory: ['Symfony\Component\HttpClient\ScopingHttpClient', 'forBaseUri']
+        autoconfigure: false
         arguments:
             $client: '@http_client'
             $baseUri: '%env(S365_CONTENT_API_URL)%'
