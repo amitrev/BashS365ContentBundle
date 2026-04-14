@@ -4,7 +4,7 @@ services:
         autoconfigure: true
         public: false
 
-    s365_content.http_client:
+    s365_content.http_client.base:
         class: Symfony\Component\HttpClient\ScopingHttpClient
         factory: ['Symfony\Component\HttpClient\ScopingHttpClient', 'forBaseUri']
         autoconfigure: false
@@ -13,13 +13,23 @@ services:
             $baseUri: '%env(S365_CONTENT_API_URL)%'
             $defaultOptions:
                 timeout: 10
-                retry_failed:
-                    max_retries: 3
-                    http_codes: [429, 500, 502, 503, 504]
-                    methods: ['GET']
-                    delay: 1000
-                    multiplier: 2
-                    jitter: 0.1
+
+    s365_content.http_client.retry_strategy:
+        class: Symfony\Component\HttpClient\Retry\GenericRetryStrategy
+        autoconfigure: false
+        arguments:
+            $statusCodes: [429, 500, 502, 503, 504]
+            $delayMs: 1000
+            $multiplier: 2.0
+            $jitter: 0.1
+
+    s365_content.http_client:
+        class: Symfony\Component\HttpClient\RetryableHttpClient
+        autoconfigure: false
+        arguments:
+            $client: '@s365_content.http_client.base'
+            $strategy: '@s365_content.http_client.retry_strategy'
+            $maxRetries: 3
 
     Bash\S365ContentBundle\Domain\HttpClient\ContentClientInterface:
         alias: Bash\S365ContentBundle\Infrastructure\HttpClient\ContentClient
