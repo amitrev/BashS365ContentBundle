@@ -45,8 +45,9 @@ final class ContentAuthenticator
                 $authData = $this->fetchNewToken();
 
                 $expiresIn = (int) ($authData['expires_in'] ?? $this->ttlCachedToken);
-                $this->expiresAt = time() + max(0, $expiresIn - 10);
-                $item->expiresAfter(max(0, $expiresIn - 10));
+                $ttl = max(0, $expiresIn - 10);
+                $this->expiresAt = time() + $ttl;
+                $item->expiresAfter($ttl);
 
                 return $authData['access_token'];
             });
