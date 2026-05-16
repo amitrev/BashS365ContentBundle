@@ -19,6 +19,7 @@ final class ContentAuthenticator
 {
     private readonly string $cacheTokenKey;
     private ?string $token = null;
+    private ?int $expiresAt = null;
 
     public function __construct(
         private readonly HttpClientInterface $httpClient,
@@ -35,7 +36,7 @@ final class ContentAuthenticator
 
     public function getToken(): string
     {
-        if (null !== $this->token) {
+        if (null !== $this->token && (null === $this->expiresAt || time() < $this->expiresAt)) {
             return $this->token;
         }
 
@@ -44,6 +45,7 @@ final class ContentAuthenticator
                 $authData = $this->fetchNewToken();
 
                 $expiresIn = (int) ($authData['expires_in'] ?? $this->ttlCachedToken);
+                $this->expiresAt = time() + max(0, $expiresIn - 10);
                 $item->expiresAfter(max(0, $expiresIn - 10));
 
                 return $authData['access_token'];
@@ -86,6 +88,7 @@ final class ContentAuthenticator
     public function forceRefreshToken(): void
     {
         $this->token = null;
+        $this->expiresAt = null;
         $this->cache->delete($this->cacheTokenKey);
     }
 }
