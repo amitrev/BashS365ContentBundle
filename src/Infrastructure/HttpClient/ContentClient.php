@@ -40,18 +40,9 @@ final readonly class ContentClient implements ContentClientInterface
             $headers['X-Correlation-ID'] = $correlationId;
         }
 
-        $finalOptions = [
-            'auth_bearer' => $this->authenticator->getToken(),
-            'headers' => $headers,
-            ...$options,
-        ];
-
-        if (isset($options['headers'])) {
-            $finalOptions['headers'] = [
-                ...$headers,
-                ...$options['headers'],
-            ];
-        }
+        $finalOptions = $options;
+        $finalOptions['headers'] = [...$headers, ...($options['headers'] ?? [])];
+        $finalOptions['auth_bearer'] ??= $this->authenticator->getToken();
 
         try {
             $response = $this->httpClient->request($method, $url, $finalOptions);
