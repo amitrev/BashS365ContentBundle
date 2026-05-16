@@ -27,23 +27,31 @@ final readonly class ContentClient implements ContentClientInterface
      */
     public function forward(string $method, string $url, array $options = [], ?string $correlationId = null): S365Response
     {
-        $defaultOptions = [
-            'auth_bearer' => $this->authenticator->getToken(),
-            'headers' => [
-                'Project' => $this->project,
-                'Accept' => 'application/json',
-            ],
+        $headers = [
+            'Project' => $this->project,
+            'Accept' => 'application/json',
         ];
 
         if ($this->disableCache) {
-            $defaultOptions['headers']['X-SMP-CACHE-DISABLE'] = 'true';
+            $headers['X-SMP-CACHE-DISABLE'] = 'true';
         }
 
         if ($correlationId) {
-            $defaultOptions['headers']['X-Correlation-ID'] = $correlationId;
+            $headers['X-Correlation-ID'] = $correlationId;
         }
 
-        $finalOptions = array_merge_recursive($defaultOptions, $options);
+        $finalOptions = [
+            'auth_bearer' => $this->authenticator->getToken(),
+            'headers' => $headers,
+            ...$options,
+        ];
+
+        if (isset($options['headers'])) {
+            $finalOptions['headers'] = [
+                ...$headers,
+                ...$options['headers'],
+            ];
+        }
 
         try {
             $response = $this->httpClient->request($method, $url, $finalOptions);
