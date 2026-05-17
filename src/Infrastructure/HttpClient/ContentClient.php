@@ -46,17 +46,16 @@ final readonly class ContentClient implements ContentClientInterface
             $headers['X-Correlation-ID'] = $correlationId;
         }
 
-        $finalOptions = $options;
-        $finalOptions['headers'] = [...$headers, ...($options['headers'] ?? [])];
-        $finalOptions['auth_bearer'] ??= $this->authenticator->getToken();
+        $options['headers'] = [...$headers, ...($options['headers'] ?? [])];
+        $options['auth_bearer'] ??= $this->authenticator->getToken();
 
         try {
-            $response = $this->httpClient->request($method, $url, $finalOptions);
+            $response = $this->httpClient->request($method, $url, $options);
 
             if (401 === $response->getStatusCode()) {
                 $this->authenticator->forceRefreshToken();
-                $finalOptions['auth_bearer'] = $this->authenticator->getToken();
-                $response = $this->httpClient->request($method, $url, $finalOptions);
+                $options['auth_bearer'] = $this->authenticator->getToken();
+                $response = $this->httpClient->request($method, $url, $options);
             }
 
             return new S365Response(

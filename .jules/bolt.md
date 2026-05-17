@@ -11,3 +11,6 @@
 ## 2025-05-14 - [Credential-Specific Cache Keys]
 **Learning:** Shared cache prefixes can lead to token collisions if multiple sets of credentials are used in the same environment.
 **Action:** Include a hash of relevant credentials in the cache key to ensure isolation and prevent redundant re-authentications.
+## 2025-05-14 - [Streaming Proxy Optimization]
+**Learning:** For proxy controllers, using `getContent(true)` to pass the request body as a resource allows the HttpClient to stream the data instead of buffering it into memory. Skipping body processing for `GET`/`HEAD` requests further reduces overhead.
+**Action:** Use resource streaming for request forwarding and skip body buffering for read-only methods.

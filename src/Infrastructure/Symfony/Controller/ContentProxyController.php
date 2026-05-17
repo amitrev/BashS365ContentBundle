@@ -32,17 +32,23 @@ final readonly class ContentProxyController
             throw new S365ContentException('Invalid or restricted endpoint');
         }
 
-        $s365Response = $this->contentClient->forward(
-            $request->getMethod(),
-            $endpoint,
-            [
-                'body' => $request->getContent(),
-                'headers' => [
-                    'Content-Type' => $request->headers->get('Content-Type', 'application/json'),
-                    'X-Correlation-ID' => $request->headers->get('X-Correlation-ID'),
-                ],
-                'query' => $request->query->all(),
+        $method = $request->getMethod();
+        $options = [
+            'headers' => [
+                'Content-Type' => $request->headers->get('Content-Type', 'application/json'),
+                'X-Correlation-ID' => $request->headers->get('X-Correlation-ID'),
             ],
+            'query' => $request->query->all(),
+        ];
+
+        if (!\in_array($method, ['GET', 'HEAD'], true)) {
+            $options['body'] = $request->getContent(true);
+        }
+
+        $s365Response = $this->contentClient->forward(
+            $method,
+            $endpoint,
+            $options,
         );
 
         return new Response(
