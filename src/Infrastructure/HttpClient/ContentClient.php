@@ -41,7 +41,6 @@ final readonly class ContentClient implements ContentClientInterface
     public function forward(string $method, string $url, array $options = [], ?string $correlationId = null): S365Response
     {
         $headers = $this->defaultHeaders;
-
         if ($correlationId) {
             $headers['X-Correlation-ID'] = $correlationId;
         }

@@ -16,6 +16,12 @@ use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
 #[AsController]
 final readonly class ContentProxyController
 {
+    private const STRIP_HEADERS = [
+        'content-encoding' => 1,
+        'transfer-encoding' => 1,
+        'content-length' => 1,
+    ];
+
     public function __construct(
         private ContentClientInterface $contentClient,
     ) {
@@ -70,10 +76,6 @@ final readonly class ContentProxyController
      */
     private function filterHeaders(array $headers): array
     {
-        return array_diff_key($headers, [
-            'content-encoding' => 1,
-            'transfer-encoding' => 1,
-            'content-length' => 1,
-        ]);
+        return array_diff_key($headers, self::STRIP_HEADERS);
     }
 }

@@ -32,26 +32,36 @@ final class ContentAuthenticator
         string $projectPrefix = 's365',
     ) {
         $credentialHash = substr(md5($username.$clientId), 0, 8);
-        $this->cacheTokenKey = $projectPrefix.'_auth_token_'.$credentialHash;
+        $this->cacheTokenKey = $projectPrefix.'_auth_token_v2_'.$credentialHash;
     }
 
     public function getToken(): string
     {
-        if (null !== $this->token && (null === $this->expiresAt || time() < $this->expiresAt)) {
+        $now = time();
+        if (null !== $this->token && (null === $this->expiresAt || $now < $this->expiresAt)) {
             return $this->token;
         }
 
         try {
-            return $this->token = $this->cache->get($this->cacheTokenKey, function (ItemInterface $item) {
+            /** @var array{token: string, expires_at: int} $cached */
+            $cached = $this->cache->get($this->cacheTokenKey, function (ItemInterface $item) use ($now) {
                 $authData = $this->fetchNewToken();
 
                 $expiresIn = (int) ($authData['expires_in'] ?? $this->ttlCachedToken);
                 $ttl = max(0, $expiresIn - 10);
-                $this->expiresAt = time() + $ttl;
+                $expiresAt = $now + $ttl;
                 $item->expiresAfter($ttl);
 
-                return $authData['access_token'];
+                return [
+                    'token' => $authData['access_token'],
+                    'expires_at' => $expiresAt,
+                ];
             });
+
+            $this->token = $cached['token'];
+            $this->expiresAt = $cached['expires_at'];
+
+            return $this->token;
         } catch (\Throwable $e) {
             throw new S365AuthenticationContentException('Could not retrieve S365 token', 0, $e);
         }

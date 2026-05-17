@@ -21,3 +21,6 @@
 ## 2025-05-14 - [Micro-optimizations in PHP]
 **Learning:** `isset` with a constant array (acting as a set) is faster than `in_array`. `array_diff_key` with a constant array is more efficient for filtering multiple keys than multiple `unset` calls.
 **Action:** Prefer `isset` for set membership checks and `array_diff_key` for bulk key removal.
+## 2025-05-14 - [Cache Reliability in Long-lived Processes]
+**Learning:** In long-running PHP processes (like worker queues), simple in-memory properties for tokens can become out of sync with the primary cache if not handled carefully. Storing both the token and its precise expiration timestamp in the cache ensures that any process fetching from the cache can accurately reconstruct the valid in-memory state.
+**Action:** Store `['token' => ..., 'expires_at' => ...]` in the cache and use it to sync internal object state.
