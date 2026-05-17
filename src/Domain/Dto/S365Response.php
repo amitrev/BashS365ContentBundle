@@ -44,6 +44,10 @@ final class S365Response
      */
     public function toArray(): array
     {
+        if ('' === $this->content) {
+            return $this->data = [];
+        }
+
         return $this->data ??= json_decode($this->content, true, 512, JSON_THROW_ON_ERROR);
     }
 }

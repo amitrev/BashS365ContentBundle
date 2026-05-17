@@ -33,16 +33,21 @@ final readonly class ContentProxyController
         }
 
         $method = $request->getMethod();
+        $headers = [
+            'Content-Type' => $request->headers->get('Content-Type', 'application/json'),
+        ];
+
+        if ($correlationId = $request->headers->get('X-Correlation-ID')) {
+            $headers['X-Correlation-ID'] = $correlationId;
+        }
+
         $options = [
-            'headers' => [
-                'Content-Type' => $request->headers->get('Content-Type', 'application/json'),
-                'X-Correlation-ID' => $request->headers->get('X-Correlation-ID'),
-            ],
+            'headers' => $headers,
             'query' => $request->query->all(),
         ];
 
-        if (!\in_array($method, ['GET', 'HEAD'], true)) {
-            $options['body'] = $request->getContent(true);
+        if (!isset(['GET' => 1, 'HEAD' => 1][$method])) {
+            $options['body'] = static fn () => $request->getContent(true);
         }
 
         $s365Response = $this->contentClient->forward(
@@ -65,12 +70,10 @@ final readonly class ContentProxyController
      */
     private function filterHeaders(array $headers): array
     {
-        unset(
-            $headers['content-encoding'],
-            $headers['transfer-encoding'],
-            $headers['content-length'],
-        );
-
-        return $headers;
+        return array_diff_key($headers, [
+            'content-encoding' => 1,
+            'transfer-encoding' => 1,
+            'content-length' => 1,
+        ]);
     }
 }

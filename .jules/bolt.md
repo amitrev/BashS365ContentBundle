@@ -14,3 +14,10 @@
 ## 2025-05-14 - [Streaming Proxy Optimization]
 **Learning:** For proxy controllers, using `getContent(true)` to pass the request body as a resource allows the HttpClient to stream the data instead of buffering it into memory. Skipping body processing for `GET`/`HEAD` requests further reduces overhead.
 **Action:** Use resource streaming for request forwarding and skip body buffering for read-only methods.
+## 2025-05-14 - [Proxy Body & Retry Fix]
+**Learning:** When using `getContent(true)` in a proxy controller, the body is a resource that can only be read once. If the HttpClient needs to retry (e.g., after a 401 token refresh), the second request will have an empty body.
+**Action:** Use a callable for the `body` option (`fn() => $request->getContent(true)`) to allow the HttpClient to re-open the resource for retries.
+
+## 2025-05-14 - [Micro-optimizations in PHP]
+**Learning:** `isset` with a constant array (acting as a set) is faster than `in_array`. `array_diff_key` with a constant array is more efficient for filtering multiple keys than multiple `unset` calls.
+**Action:** Prefer `isset` for set membership checks and `array_diff_key` for bulk key removal.
