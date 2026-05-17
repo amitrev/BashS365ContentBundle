@@ -13,6 +13,9 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 final readonly class ContentClient implements ContentClientInterface
 {
+    /** @var array<string, string> */
+    private array $defaultHeaders;
+
     public function __construct(
         private HttpClientInterface $httpClient,
         private ContentAuthenticator $authenticator,
@@ -20,6 +23,16 @@ final readonly class ContentClient implements ContentClientInterface
         private string $project,
         private bool $disableCache,
     ) {
+        $headers = [
+            'Project' => $this->project,
+            'Accept' => 'application/json',
+        ];
+
+        if ($this->disableCache) {
+            $headers['X-SMP-CACHE-DISABLE'] = 'true';
+        }
+
+        $this->defaultHeaders = $headers;
     }
 
     /**
@@ -27,23 +40,15 @@ final readonly class ContentClient implements ContentClientInterface
      */
     public function forward(string $method, string $url, array $options = [], ?string $correlationId = null): S365Response
     {
-        $defaultOptions = [
-            'auth_bearer' => $this->authenticator->getToken(),
-            'headers' => [
-                'Project' => $this->project,
-                'Accept' => 'application/json',
-            ],
-        ];
-
-        if ($this->disableCache) {
-            $defaultOptions['headers']['X-SMP-CACHE-DISABLE'] = 'true';
-        }
+        $headers = $this->defaultHeaders;
 
         if ($correlationId) {
-            $defaultOptions['headers']['X-Correlation-ID'] = $correlationId;
+            $headers['X-Correlation-ID'] = $correlationId;
         }
 
-        $finalOptions = array_merge_recursive($defaultOptions, $options);
+        $finalOptions = $options;
+        $finalOptions['headers'] = [...$headers, ...($options['headers'] ?? [])];
+        $finalOptions['auth_bearer'] ??= $this->authenticator->getToken();
 
         try {
             $response = $this->httpClient->request($method, $url, $finalOptions);

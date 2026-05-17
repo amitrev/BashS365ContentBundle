@@ -4,15 +4,18 @@ declare(strict_types=1);
 
 namespace Bash\S365ContentBundle\Domain\Dto;
 
-final readonly class S365Response
+final class S365Response
 {
+    /** @var array<string, mixed>|null */
+    private ?array $data = null;
+
     /**
      * @param array<string, string[]> $headers
      */
     public function __construct(
-        private string $content,
-        private int $statusCode,
-        private array $headers = [],
+        private readonly string $content,
+        private readonly int $statusCode,
+        private readonly array $headers = [],
     ) {
     }
 
@@ -41,6 +44,6 @@ final readonly class S365Response
      */
     public function toArray(): array
     {
-        return json_decode($this->content, true, 512, JSON_THROW_ON_ERROR);
+        return $this->data ??= json_decode($this->content, true, 512, JSON_THROW_ON_ERROR);
     }
 }

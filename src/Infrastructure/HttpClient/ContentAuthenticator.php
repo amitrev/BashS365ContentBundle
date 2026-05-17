@@ -15,31 +15,40 @@ use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
-final readonly class ContentAuthenticator
+final class ContentAuthenticator
 {
-    private string $cacheTokenKey;
+    private readonly string $cacheTokenKey;
+    private ?string $token = null;
+    private ?int $expiresAt = null;
 
     public function __construct(
-        private HttpClientInterface $httpClient,
-        private CacheInterface $cache,
-        private string $username,
-        private string $password,
-        private string $clientId,
-        private string $clientSecret,
-        private int $ttlCachedToken = 2592000,
+        private readonly HttpClientInterface $httpClient,
+        private readonly CacheInterface $cache,
+        private readonly string $username,
+        private readonly string $password,
+        private readonly string $clientId,
+        private readonly string $clientSecret,
+        private readonly int $ttlCachedToken = 2592000,
         string $projectPrefix = 's365',
     ) {
-        $this->cacheTokenKey = $projectPrefix.'_auth_token';
+        $credentialHash = substr(md5($username.$clientId), 0, 8);
+        $this->cacheTokenKey = $projectPrefix.'_auth_token_'.$credentialHash;
     }
 
     public function getToken(): string
     {
+        if (null !== $this->token && (null === $this->expiresAt || time() < $this->expiresAt)) {
+            return $this->token;
+        }
+
         try {
-            return $this->cache->get($this->cacheTokenKey, function (ItemInterface $item) {
+            return $this->token = $this->cache->get($this->cacheTokenKey, function (ItemInterface $item) {
                 $authData = $this->fetchNewToken();
 
                 $expiresIn = (int) ($authData['expires_in'] ?? $this->ttlCachedToken);
-                $item->expiresAfter(max(0, $expiresIn - 10));
+                $ttl = max(0, $expiresIn - 10);
+                $this->expiresAt = time() + $ttl;
+                $item->expiresAfter($ttl);
 
                 return $authData['access_token'];
             });
@@ -80,6 +89,8 @@ final readonly class ContentAuthenticator
      */
     public function forceRefreshToken(): void
     {
+        $this->token = null;
+        $this->expiresAt = null;
         $this->cache->delete($this->cacheTokenKey);
     }
 }
