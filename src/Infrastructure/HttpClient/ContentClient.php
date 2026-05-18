@@ -20,15 +20,15 @@ final readonly class ContentClient implements ContentClientInterface
         private HttpClientInterface $httpClient,
         private ContentAuthenticator $authenticator,
         #[Target('s365_content')] private LoggerInterface $logger,
-        private string $project,
-        private bool $disableCache,
+        string $project,
+        bool $disableCache,
     ) {
         $headers = [
-            'Project' => $this->project,
+            'Project' => $project,
             'Accept' => 'application/json',
         ];
 
-        if ($this->disableCache) {
+        if ($disableCache) {
             $headers['X-SMP-CACHE-DISABLE'] = 'true';
         }
 
@@ -40,12 +40,16 @@ final readonly class ContentClient implements ContentClientInterface
      */
     public function forward(string $method, string $url, array $options = [], ?string $correlationId = null): S365Response
     {
-        $headers = $this->defaultHeaders;
-        if ($correlationId) {
-            $headers['X-Correlation-ID'] = $correlationId;
+        if (null === $correlationId && !isset($options['headers'])) {
+            $options['headers'] = $this->defaultHeaders;
+        } else {
+            $headers = $this->defaultHeaders;
+            if ($correlationId) {
+                $headers['X-Correlation-ID'] = $correlationId;
+            }
+            $options['headers'] = [...$headers, ...($options['headers'] ?? [])];
         }
 
-        $options['headers'] = [...$headers, ...($options['headers'] ?? [])];
         $options['auth_bearer'] ??= $this->authenticator->getToken();
 
         try {

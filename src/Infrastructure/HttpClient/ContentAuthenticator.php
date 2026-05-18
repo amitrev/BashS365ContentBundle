@@ -37,12 +37,12 @@ final class ContentAuthenticator
 
     public function getToken(): string
     {
-        $now = time();
-        if (null !== $this->token && (null === $this->expiresAt || $now < $this->expiresAt)) {
+        if (null !== $this->token && time() < $this->expiresAt) {
             return $this->token;
         }
 
         try {
+            $now = time();
             /** @var array{token: string, expires_at: int} $cached */
             $cached = $this->cache->get($this->cacheTokenKey, function (ItemInterface $item) use ($now) {
                 $authData = $this->fetchNewToken();

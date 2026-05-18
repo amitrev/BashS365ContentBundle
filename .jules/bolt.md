@@ -24,3 +24,6 @@
 ## 2025-05-14 - [Cache Reliability in Long-lived Processes]
 **Learning:** In long-running PHP processes (like worker queues), simple in-memory properties for tokens can become out of sync with the primary cache if not handled carefully. Storing both the token and its precise expiration timestamp in the cache ensures that any process fetching from the cache can accurately reconstruct the valid in-memory state.
 **Action:** Store `['token' => ..., 'expires_at' => ...]` in the cache and use it to sync internal object state.
+## 2025-05-14 - [In-place Options Optimization]
+**Learning:** Modifying the `$options` array directly and avoiding spread-operator merges when defaults are sufficient can save memory and CPU cycles in high-throughput clients.
+**Action:** Detect cases where default headers can be used as-is to skip merging logic.

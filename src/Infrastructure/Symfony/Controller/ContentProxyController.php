@@ -22,6 +22,11 @@ final readonly class ContentProxyController
         'content-length' => 1,
     ];
 
+    private const METHODS_WITHOUT_BODY = [
+        'GET' => 1,
+        'HEAD' => 1,
+    ];
+
     public function __construct(
         private ContentClientInterface $contentClient,
     ) {
@@ -52,7 +57,7 @@ final readonly class ContentProxyController
             'query' => $request->query->all(),
         ];
 
-        if (!isset(['GET' => 1, 'HEAD' => 1][$method])) {
+        if (!isset(self::METHODS_WITHOUT_BODY[$method])) {
             $options['body'] = static fn () => $request->getContent(true);
         }
 
