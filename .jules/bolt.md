@@ -27,3 +27,6 @@
 ## 2025-05-14 - [In-place Options Optimization]
 **Learning:** Modifying the `$options` array directly and avoiding spread-operator merges when defaults are sufficient can save memory and CPU cycles in high-throughput clients.
 **Action:** Detect cases where default headers can be used as-is to skip merging logic.
+## 2025-05-14 - [Hot Path Header Optimization]
+**Learning:** In the `forward()` method, which is the most called method in the bundle, avoiding array spreads and merges for headers when no custom options are provided significantly reduces CPU overhead. Handling the `correlationId` case separately is more efficient.
+**Action:** Use conditional assignment for default headers to avoid merging logic whenever possible.

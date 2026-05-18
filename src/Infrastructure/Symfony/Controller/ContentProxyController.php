@@ -54,8 +54,11 @@ final readonly class ContentProxyController
 
         $options = [
             'headers' => $headers,
-            'query' => $request->query->all(),
         ];
+
+        if ($query = $request->query->all()) {
+            $options['query'] = $query;
+        }
 
         if (!isset(self::METHODS_WITHOUT_BODY[$method])) {
             $options['body'] = static fn () => $request->getContent(true);

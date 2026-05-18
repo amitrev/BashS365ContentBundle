@@ -40,14 +40,17 @@ final readonly class ContentClient implements ContentClientInterface
      */
     public function forward(string $method, string $url, array $options = [], ?string $correlationId = null): S365Response
     {
-        if (null === $correlationId && !isset($options['headers'])) {
+        if (!isset($options['headers'])) {
             $options['headers'] = $this->defaultHeaders;
+            if (null !== $correlationId) {
+                $options['headers']['X-Correlation-ID'] = $correlationId;
+            }
         } else {
             $headers = $this->defaultHeaders;
             if ($correlationId) {
                 $headers['X-Correlation-ID'] = $correlationId;
             }
-            $options['headers'] = [...$headers, ...($options['headers'] ?? [])];
+            $options['headers'] = [...$headers, ...$options['headers']];
         }
 
         $options['auth_bearer'] ??= $this->authenticator->getToken();
