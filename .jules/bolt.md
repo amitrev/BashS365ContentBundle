@@ -30,3 +30,9 @@
 ## 2025-05-14 - [Hot Path Header Optimization]
 **Learning:** In the `forward()` method, which is the most called method in the bundle, avoiding array spreads and merges for headers when no custom options are provided significantly reduces CPU overhead. Handling the `correlationId` case separately is more efficient.
 **Action:** Use conditional assignment for default headers to avoid merging logic whenever possible.
+## 2025-05-14 - [Static Request Body Optimization]
+**Learning:** For predictable API requests like OAuth2 token exchanges, pre-calculating the request body in the constructor avoids redundant array operations during every refresh attempt.
+**Action:** Move static API request bodies to class properties.
+## 2025-05-14 - [Memory & Security in Cache Keys]
+**Learning:** Initializing cache keys based on all relevant credentials (hashed) ensures perfect isolation between different bundle instances in the same environment. Removing these credentials from object properties after they've been used in the constructor reduces the object's memory footprint and improves security by not keeping sensitive data in memory longer than necessary.
+**Action:** Hash all identifying credentials for cache keys and avoid keeping them as class properties if only needed for initialization.

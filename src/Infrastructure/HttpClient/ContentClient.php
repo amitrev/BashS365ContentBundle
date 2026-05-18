@@ -70,7 +70,11 @@ final readonly class ContentClient implements ContentClientInterface
                 $response->getHeaders(false),
             );
         } catch (\Throwable $e) {
-            $this->logger->error('S365 API Transport Error', ['url' => $url, 'correlation_id' => $correlationId, 'error' => $e->getMessage()]);
+            $this->logger->error('S365 API Transport Error', [
+                'url' => $url,
+                'correlation_id' => $correlationId ?? $options['headers']['X-Correlation-ID'] ?? null,
+                'error' => $e->getMessage(),
+            ]);
             throw new S365CommunicationException('Transport error for '.$url, 0, $e);
         }
     }

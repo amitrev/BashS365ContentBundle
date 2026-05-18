@@ -18,21 +18,32 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 final class ContentAuthenticator
 {
     private readonly string $cacheTokenKey;
+
+    /** @var array{grant_type: string, client_id: string, client_secret: string, username: string, password: string} */
+    private readonly array $authBody;
+
     private ?string $token = null;
     private ?int $expiresAt = null;
 
     public function __construct(
         private readonly HttpClientInterface $httpClient,
         private readonly CacheInterface $cache,
-        private readonly string $username,
-        private readonly string $password,
-        private readonly string $clientId,
-        private readonly string $clientSecret,
+        string $username,
+        string $password,
+        string $clientId,
+        string $clientSecret,
         private readonly int $ttlCachedToken = 2592000,
         string $projectPrefix = 's365',
     ) {
-        $credentialHash = substr(md5($username.$clientId), 0, 8);
-        $this->cacheTokenKey = $projectPrefix.'_auth_token_v2_'.$credentialHash;
+        $credentialHash = substr(md5($username.$password.$clientId.$clientSecret), 0, 8);
+        $this->cacheTokenKey = $projectPrefix.'_auth_token_v3_'.$credentialHash;
+        $this->authBody = [
+            'grant_type' => 'password',
+            'client_id' => $clientId,
+            'client_secret' => $clientSecret,
+            'username' => $username,
+            'password' => $password,
+        ];
     }
 
     public function getToken(): string
@@ -75,13 +86,7 @@ final class ContentAuthenticator
     private function fetchNewToken(): array
     {
         $response = $this->httpClient->request('POST', '/oauth/token', [
-            'body' => [
-                'grant_type' => 'password',
-                'client_id' => $this->clientId,
-                'client_secret' => $this->clientSecret,
-                'username' => $this->username,
-                'password' => $this->password,
-            ],
+            'body' => $this->authBody,
         ]);
 
         if (200 !== $response->getStatusCode()) {

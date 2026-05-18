@@ -44,30 +44,22 @@ final readonly class ContentProxyController
         }
 
         $method = $request->getMethod();
-        $headers = [
-            'Content-Type' => $request->headers->get('Content-Type', 'application/json'),
-        ];
+        $options = [];
 
-        if ($correlationId = $request->headers->get('X-Correlation-ID')) {
-            $headers['X-Correlation-ID'] = $correlationId;
+        if (!isset(self::METHODS_WITHOUT_BODY[$method])) {
+            $options['headers']['Content-Type'] = $request->headers->get('Content-Type', 'application/json');
+            $options['body'] = static fn () => $request->getContent(true);
         }
-
-        $options = [
-            'headers' => $headers,
-        ];
 
         if ($query = $request->query->all()) {
             $options['query'] = $query;
         }
 
-        if (!isset(self::METHODS_WITHOUT_BODY[$method])) {
-            $options['body'] = static fn () => $request->getContent(true);
-        }
-
         $s365Response = $this->contentClient->forward(
-            $method,
-            $endpoint,
-            $options,
+            method: $method,
+            url: $endpoint,
+            options: $options,
+            correlationId: $request->headers->get('X-Correlation-ID'),
         );
 
         return new Response(

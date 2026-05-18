@@ -52,9 +52,9 @@ final class S365Response
             return $this->data = [];
         }
 
-        /** @var array<string, mixed> $data */
+        /** @var array<string, mixed>|mixed $data */
         $data = json_decode($this->content, true, 512, JSON_THROW_ON_ERROR);
 
-        return $this->data = $data;
+        return $this->data = \is_array($data) ? $data : [];
     }
 }
