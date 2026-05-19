@@ -35,7 +35,7 @@ final class ContentAuthenticator
         private readonly int $ttlCachedToken = 2592000,
         string $projectPrefix = 's365',
     ) {
-        $credentialHash = substr(md5($username.$password.$clientId.$clientSecret), 0, 8);
+        $credentialHash = \substr(\md5($username.$password.$clientId.$clientSecret), 0, 8);
         $this->cacheTokenKey = $projectPrefix.'_auth_token_v3_'.$credentialHash;
         $this->authBody = [
             'grant_type' => 'password',
@@ -48,18 +48,18 @@ final class ContentAuthenticator
 
     public function getToken(): string
     {
-        if (null !== $this->token && time() < $this->expiresAt) {
+        $now = \time();
+        if (null !== $this->token && $now < $this->expiresAt) {
             return $this->token;
         }
 
         try {
-            $now = time();
             /** @var array{token: string, expires_at: int} $cached */
             $cached = $this->cache->get($this->cacheTokenKey, function (ItemInterface $item) use ($now) {
                 $authData = $this->fetchNewToken();
 
                 $expiresIn = (int) ($authData['expires_in'] ?? $this->ttlCachedToken);
-                $ttl = max(0, $expiresIn - 10);
+                $ttl = \max(0, $expiresIn - 10);
                 $expiresAt = $now + $ttl;
                 $item->expiresAfter($ttl);
 

@@ -39,7 +39,7 @@ final readonly class ContentProxyController
      */
     public function __invoke(Request $request, string $endpoint): Response
     {
-        if (str_starts_with($endpoint, 'oauth') || str_contains($endpoint, '..')) {
+        if (\str_starts_with($endpoint, 'oauth') || \str_contains($endpoint, '..')) {
             throw new S365ContentException('Invalid or restricted endpoint');
         }
 
@@ -76,6 +76,6 @@ final readonly class ContentProxyController
      */
     private function filterHeaders(array $headers): array
     {
-        return array_diff_key($headers, self::STRIP_HEADERS);
+        return \array_diff_key($headers, self::STRIP_HEADERS);
     }
 }
