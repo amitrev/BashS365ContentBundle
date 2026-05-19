@@ -48,3 +48,6 @@
 ## 2025-05-14 - [Static Cache Closures]
 **Learning:** Using `static` closures for cache retrieval prevents the closure from unnecessarily binding `$this`. This can slightly reduce memory overhead and prevents potential memory leaks or unintended state capture in long-lived services.
 **Action:** Use `static function` for cache closures whenever the closure doesn't strictly require `$this`.
+## 2025-05-14 - [Closure Optimization]
+**Learning:** Captured variables in closures should be as minimal as possible. Pre-calculating values (like current time) outside the closure and then using them inside ensures that every invocation of the closure uses the same base data and avoids redundant system calls.
+**Action:** Minimize and refine closure captures for hot-path logic.

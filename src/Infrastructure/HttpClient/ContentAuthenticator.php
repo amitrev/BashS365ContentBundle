@@ -41,7 +41,8 @@ final class ContentAuthenticator
 
     public function getToken(): string
     {
-        if (null !== $this->token && \time() < $this->expiresAt) {
+        $now = \time();
+        if (null !== $this->token && $now < $this->expiresAt) {
             return $this->token;
         }
 
@@ -51,7 +52,7 @@ final class ContentAuthenticator
             $defaultTtl = $this->ttlCachedToken;
 
             /** @var array{token: string, expires_at: int} $cached */
-            $cached = $this->cache->get($this->cacheTokenKey, static function (ItemInterface $item) use ($httpClient, $body, $defaultTtl) {
+            $cached = $this->cache->get($this->cacheTokenKey, static function (ItemInterface $item) use ($httpClient, $body, $defaultTtl, $now) {
                 $response = $httpClient->request('POST', '/oauth/token', [
                     'headers' => ['Content-Type' => 'application/x-www-form-urlencoded'],
                     'body' => $body,
@@ -66,7 +67,7 @@ final class ContentAuthenticator
 
                 $expiresIn = (int) ($authData['expires_in'] ?? $defaultTtl);
                 $ttl = \max(0, $expiresIn - 10);
-                $expiresAt = \time() + $ttl;
+                $expiresAt = $now + $ttl;
                 $item->expiresAfter($ttl);
 
                 return [
