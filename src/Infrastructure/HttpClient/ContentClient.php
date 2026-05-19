@@ -42,15 +42,19 @@ final readonly class ContentClient implements ContentClientInterface
     {
         $correlationId ??= $options['headers']['X-Correlation-ID'] ?? null;
 
-        $headers = $this->defaultHeaders;
-        if (null !== $correlationId) {
-            $headers['X-Correlation-ID'] = $correlationId;
-        }
-
-        if (!isset($options['headers'])) {
-            $options['headers'] = $headers;
+        if (null === $correlationId && !isset($options['headers'])) {
+            $options['headers'] = $this->defaultHeaders;
         } else {
-            $options['headers'] += $headers;
+            $headers = $this->defaultHeaders;
+            if (null !== $correlationId) {
+                $headers['X-Correlation-ID'] = $correlationId;
+            }
+
+            if (!isset($options['headers'])) {
+                $options['headers'] = $headers;
+            } else {
+                $options['headers'] += $headers;
+            }
         }
 
         $options['auth_bearer'] ??= $this->authenticator->getToken();

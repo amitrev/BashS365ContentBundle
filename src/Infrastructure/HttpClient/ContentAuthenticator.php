@@ -18,9 +18,7 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 final class ContentAuthenticator
 {
     private readonly string $cacheTokenKey;
-
-    /** @var array{grant_type: string, client_id: string, client_secret: string, username: string, password: string} */
-    private readonly array $authBody;
+    private readonly string $authSerializedBody;
 
     private ?string $token = null;
     private ?int $expiresAt = null;
@@ -37,30 +35,29 @@ final class ContentAuthenticator
     ) {
         $credentialHash = \substr(\md5($username.$password.$clientId.$clientSecret), 0, 8);
         $this->cacheTokenKey = $projectPrefix.'_auth_token_v3_'.$credentialHash;
-        $this->authBody = [
+        $this->authSerializedBody = \http_build_query([
             'grant_type' => 'password',
             'client_id' => $clientId,
             'client_secret' => $clientSecret,
             'username' => $username,
             'password' => $password,
-        ];
+        ]);
     }
 
     public function getToken(): string
     {
-        $now = \time();
-        if (null !== $this->token && $now < $this->expiresAt) {
+        if (null !== $this->token && \time() < $this->expiresAt) {
             return $this->token;
         }
 
         try {
             /** @var array{token: string, expires_at: int} $cached */
-            $cached = $this->cache->get($this->cacheTokenKey, function (ItemInterface $item) use ($now) {
+            $cached = $this->cache->get($this->cacheTokenKey, function (ItemInterface $item) {
                 $authData = $this->fetchNewToken();
 
                 $expiresIn = (int) ($authData['expires_in'] ?? $this->ttlCachedToken);
                 $ttl = \max(0, $expiresIn - 10);
-                $expiresAt = $now + $ttl;
+                $expiresAt = \time() + $ttl;
                 $item->expiresAfter($ttl);
 
                 return [
@@ -86,7 +83,8 @@ final class ContentAuthenticator
     private function fetchNewToken(): array
     {
         $response = $this->httpClient->request('POST', '/oauth/token', [
-            'body' => $this->authBody,
+            'headers' => ['Content-Type' => 'application/x-www-form-urlencoded'],
+            'body' => $this->authSerializedBody,
         ]);
 
         if (200 !== $response->getStatusCode()) {

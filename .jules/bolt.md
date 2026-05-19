@@ -42,3 +42,6 @@
 ## 2025-05-14 - [Public Readonly for DTOs]
 **Learning:** For high-access DTOs, using `public readonly` properties instead of private properties with getters can slightly reduce method call overhead while maintaining immutability.
 **Action:** Prefer `public readonly` for DTO data fields when targeting PHP 8.2+.
+## 2025-05-14 - [Static Serialized Body]
+**Learning:** For OAuth2 token requests, pre-building the serialized request body (`application/x-www-form-urlencoded`) in the constructor avoids the overhead of repeated `http_build_query` calls during token refresh.
+**Action:** Pre-serialize static API request bodies in the constructor.
