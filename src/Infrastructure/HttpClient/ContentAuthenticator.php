@@ -8,11 +8,6 @@ use Bash\S365ContentBundle\Domain\Exception\S365AuthenticationContentException;
 use Psr\Cache\InvalidArgumentException;
 use Symfony\Contracts\Cache\CacheInterface;
 use Symfony\Contracts\Cache\ItemInterface;
-use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
-use Symfony\Contracts\HttpClient\Exception\DecodingExceptionInterface;
-use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
-use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
-use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 final class ContentAuthenticator
@@ -51,11 +46,25 @@ final class ContentAuthenticator
         }
 
         try {
-            /** @var array{token: string, expires_at: int} $cached */
-            $cached = $this->cache->get($this->cacheTokenKey, function (ItemInterface $item) {
-                $authData = $this->fetchNewToken();
+            $httpClient = $this->httpClient;
+            $body = $this->authSerializedBody;
+            $defaultTtl = $this->ttlCachedToken;
 
-                $expiresIn = (int) ($authData['expires_in'] ?? $this->ttlCachedToken);
+            /** @var array{token: string, expires_at: int} $cached */
+            $cached = $this->cache->get($this->cacheTokenKey, static function (ItemInterface $item) use ($httpClient, $body, $defaultTtl) {
+                $response = $httpClient->request('POST', '/oauth/token', [
+                    'headers' => ['Content-Type' => 'application/x-www-form-urlencoded'],
+                    'body' => $body,
+                ]);
+
+                if (200 !== $response->getStatusCode()) {
+                    throw new S365AuthenticationContentException('Invalid credentials or S365 API error');
+                }
+
+                /** @var array{access_token: string, expires_in?: int} $authData */
+                $authData = $response->toArray();
+
+                $expiresIn = (int) ($authData['expires_in'] ?? $defaultTtl);
                 $ttl = \max(0, $expiresIn - 10);
                 $expiresAt = \time() + $ttl;
                 $item->expiresAfter($ttl);
@@ -73,28 +82,6 @@ final class ContentAuthenticator
         } catch (\Throwable $e) {
             throw new S365AuthenticationContentException('Could not retrieve S365 token', 0, $e);
         }
-    }
-
-    /**
-     * @return array{access_token: string, expires_in?: int}
-     *
-     * @throws TransportExceptionInterface|ClientExceptionInterface|DecodingExceptionInterface|RedirectionExceptionInterface|ServerExceptionInterface|TransportExceptionInterface
-     */
-    private function fetchNewToken(): array
-    {
-        $response = $this->httpClient->request('POST', '/oauth/token', [
-            'headers' => ['Content-Type' => 'application/x-www-form-urlencoded'],
-            'body' => $this->authSerializedBody,
-        ]);
-
-        if (200 !== $response->getStatusCode()) {
-            throw new S365AuthenticationContentException('Invalid credentials or S365 API error');
-        }
-
-        /** @var array{access_token: string, expires_in?: int} $data */
-        $data = $response->toArray();
-
-        return $data;
     }
 
     /**

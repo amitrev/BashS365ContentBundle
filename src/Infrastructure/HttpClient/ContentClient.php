@@ -69,9 +69,9 @@ final readonly class ContentClient implements ContentClientInterface
             }
 
             return new S365Response(
-                $response->getContent(false),
-                $response->getStatusCode(),
-                $response->getHeaders(false),
+                content: $response->getContent(false),
+                statusCode: $response->getStatusCode(),
+                headers: $response->getHeaders(false),
             );
         } catch (\Throwable $e) {
             $this->logger->error('S365 API Transport Error', [

@@ -45,3 +45,6 @@
 ## 2025-05-14 - [Static Serialized Body]
 **Learning:** For OAuth2 token requests, pre-building the serialized request body (`application/x-www-form-urlencoded`) in the constructor avoids the overhead of repeated `http_build_query` calls during token refresh.
 **Action:** Pre-serialize static API request bodies in the constructor.
+## 2025-05-14 - [Static Cache Closures]
+**Learning:** Using `static` closures for cache retrieval prevents the closure from unnecessarily binding `$this`. This can slightly reduce memory overhead and prevents potential memory leaks or unintended state capture in long-lived services.
+**Action:** Use `static function` for cache closures whenever the closure doesn't strictly require `$this`.
