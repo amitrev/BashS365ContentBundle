@@ -40,6 +40,8 @@ final readonly class ContentClient implements ContentClientInterface
      */
     public function forward(string $method, string $url, array $options = [], ?string $correlationId = null): S365Response
     {
+        $correlationId ??= $options['headers']['X-Correlation-ID'] ?? null;
+
         $headers = $this->defaultHeaders;
         if (null !== $correlationId) {
             $headers['X-Correlation-ID'] = $correlationId;
@@ -70,7 +72,7 @@ final readonly class ContentClient implements ContentClientInterface
         } catch (\Throwable $e) {
             $this->logger->error('S365 API Transport Error', [
                 'url' => $url,
-                'correlation_id' => $correlationId ?? $options['headers']['X-Correlation-ID'] ?? null,
+                'correlation_id' => $correlationId,
                 'error' => $e->getMessage(),
             ]);
             throw new S365CommunicationException('Transport error for '.$url, 0, $e);

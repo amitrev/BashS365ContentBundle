@@ -39,3 +39,6 @@
 ## 2025-05-14 - [PHP Engine Micro-optimizations]
 **Learning:** Adding leading backslashes to global function calls (e.g., `\time()`) avoids the engine checking the current namespace first, which can save time in tight loops. Using the `+` operator for array merging is often faster than `array_merge` or the spread operator when keys are known not to be duplicate or when simple override logic is sufficient.
 **Action:** Use leading backslashes for all global PHP functions and prefer the `+` operator for efficient array merging where appropriate.
+## 2025-05-14 - [Public Readonly for DTOs]
+**Learning:** For high-access DTOs, using `public readonly` properties instead of private properties with getters can slightly reduce method call overhead while maintaining immutability.
+**Action:** Prefer `public readonly` for DTO data fields when targeting PHP 8.2+.

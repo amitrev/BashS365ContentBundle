@@ -63,9 +63,9 @@ final readonly class ContentProxyController
         );
 
         return new Response(
-            $s365Response->getContent(),
-            $s365Response->getStatusCode(),
-            $this->filterHeaders($s365Response->getHeaders()),
+            $s365Response->content,
+            $s365Response->statusCode,
+            self::filterHeaders($s365Response->headers),
         );
     }
 
@@ -74,7 +74,7 @@ final readonly class ContentProxyController
      *
      * @return array<string, string[]>
      */
-    private function filterHeaders(array $headers): array
+    private static function filterHeaders(array $headers): array
     {
         return \array_diff_key($headers, self::STRIP_HEADERS);
     }

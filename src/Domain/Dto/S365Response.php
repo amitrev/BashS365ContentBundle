@@ -13,9 +13,9 @@ final class S365Response
      * @param array<string, string[]> $headers
      */
     public function __construct(
-        private readonly string $content,
-        private readonly int $statusCode,
-        private readonly array $headers = [],
+        public readonly string $content,
+        public readonly int $statusCode,
+        public readonly array $headers = [],
     ) {
     }
 
