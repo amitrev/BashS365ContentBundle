@@ -57,3 +57,6 @@
 ## 2025-05-14 - [Dependency Minimization]
 **Learning:** Periodically auditing `composer.json` for unused dependencies (like `symfony/uid` in this bundle) reduces the package footprint, speeds up installation, and minimizes the security attack surface.
 **Action:** Remove unused dependencies from `composer.json`.
+## 2025-05-14 - [PHP Native Efficiency]
+**Learning:** Backslashing global constants (e.g., `\JSON_THROW_ON_ERROR`) and utilizing class constants for repeated strings (like API paths) avoids redundant lookups. Consistently reusing pre-captured timestamps in complex logic (like cache closures) ensures data integrity and reduces system clock calls.
+**Action:** Use leading backslashes for all global PHP identifiers and consolidate repeated strings into class constants.

@@ -12,6 +12,8 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 final class ContentAuthenticator
 {
+    private const AUTH_PATH = '/oauth/token';
+
     private readonly string $cacheTokenKey;
     private readonly string $authSerializedBody;
 
@@ -52,8 +54,8 @@ final class ContentAuthenticator
             $defaultTtl = $this->ttlCachedToken;
 
             /** @var array{token: string, expires_at: int} $cached */
-            $cached = $this->cache->get($this->cacheTokenKey, static function (ItemInterface $item) use ($httpClient, $body, $defaultTtl) {
-                $response = $httpClient->request('POST', '/oauth/token', [
+            $cached = $this->cache->get($this->cacheTokenKey, static function (ItemInterface $item) use ($httpClient, $body, $defaultTtl, $now) {
+                $response = $httpClient->request('POST', self::AUTH_PATH, [
                     'headers' => ['Content-Type' => 'application/x-www-form-urlencoded'],
                     'body' => $body,
                 ]);
@@ -71,7 +73,7 @@ final class ContentAuthenticator
 
                 return [
                     'token' => $authData['access_token'],
-                    'expires_at' => \time() + $ttl,
+                    'expires_at' => $now + $ttl,
                 ];
             });
 

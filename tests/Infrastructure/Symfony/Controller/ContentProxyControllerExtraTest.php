@@ -31,11 +31,11 @@ class ContentProxyControllerExtraTest extends TestCase
                 'endpoint',
                 $this->callback(function ($options) {
                     $body = $options['body'];
-                    if (is_callable($body)) {
+                    if (\is_callable($body)) {
                         $body = $body();
                     }
-                    if (is_resource($body)) {
-                        $body = stream_get_contents($body);
+                    if (\is_resource($body)) {
+                        $body = \stream_get_contents($body);
                     }
 
                     return isset($options['body'], $options['headers']['Content-Type']) && '{"foo":"bar"}' === $body;
