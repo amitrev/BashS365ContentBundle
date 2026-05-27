@@ -28,7 +28,7 @@ final class ContentAuthenticator
         private readonly int $ttlCachedToken = 2592000,
         string $projectPrefix = 's365',
     ) {
-        $credentialHash = \substr(\md5($username.$password.$clientId.$clientSecret), 0, 8);
+        $credentialHash = \substr(\md5($username."\0".$password."\0".$clientId."\0".$clientSecret), 0, 8);
         $this->cacheTokenKey = $projectPrefix.'_auth_token_v3_'.$credentialHash;
         $this->authSerializedBody = \http_build_query([
             'grant_type' => 'password',
