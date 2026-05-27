@@ -52,7 +52,7 @@ final class ContentAuthenticator
             $defaultTtl = $this->ttlCachedToken;
 
             /** @var array{token: string, expires_at: int} $cached */
-            $cached = $this->cache->get($this->cacheTokenKey, static function (ItemInterface $item) use ($httpClient, $body, $defaultTtl, $now) {
+            $cached = $this->cache->get($this->cacheTokenKey, static function (ItemInterface $item) use ($httpClient, $body, $defaultTtl) {
                 $response = $httpClient->request('POST', '/oauth/token', [
                     'headers' => ['Content-Type' => 'application/x-www-form-urlencoded'],
                     'body' => $body,
@@ -67,12 +67,11 @@ final class ContentAuthenticator
 
                 $expiresIn = (int) ($authData['expires_in'] ?? $defaultTtl);
                 $ttl = \max(0, $expiresIn - 10);
-                $expiresAt = $now + $ttl;
                 $item->expiresAfter($ttl);
 
                 return [
                     'token' => $authData['access_token'],
-                    'expires_at' => $expiresAt,
+                    'expires_at' => \time() + $ttl,
                 ];
             });
 

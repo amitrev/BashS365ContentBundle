@@ -13,12 +13,12 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 final readonly class ContentClient implements ContentClientInterface
 {
-    private HttpClientInterface $httpClient;
+    private readonly HttpClientInterface $httpClient;
 
     public function __construct(
         HttpClientInterface $httpClient,
-        private ContentAuthenticator $authenticator,
-        #[Target('s365_content')] private LoggerInterface $logger,
+        private readonly ContentAuthenticator $authenticator,
+        #[Target('s365_content')] private readonly LoggerInterface $logger,
         string $project,
         bool $disableCache,
     ) {

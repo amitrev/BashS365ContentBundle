@@ -54,3 +54,6 @@
 ## 2025-05-14 - [Scoped HttpClients]
 **Learning:** Using `withOptions()` to create a scoped HttpClient for default headers is more efficient than manual array merging in every request method. However, this may require updating mocks in unit tests to handle the additional `withOptions()` call.
 **Action:** Use scoped clients via `withOptions()` for persistent configuration.
+## 2025-05-14 - [Dependency Minimization]
+**Learning:** Periodically auditing `composer.json` for unused dependencies (like `symfony/uid` in this bundle) reduces the package footprint, speeds up installation, and minimizes the security attack surface.
+**Action:** Remove unused dependencies from `composer.json`.
