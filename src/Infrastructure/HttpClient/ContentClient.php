@@ -13,11 +13,10 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 final readonly class ContentClient implements ContentClientInterface
 {
-    /** @var array<string, string> */
-    private array $defaultHeaders;
+    private HttpClientInterface $httpClient;
 
     public function __construct(
-        private HttpClientInterface $httpClient,
+        HttpClientInterface $httpClient,
         private ContentAuthenticator $authenticator,
         #[Target('s365_content')] private LoggerInterface $logger,
         string $project,
@@ -32,7 +31,7 @@ final readonly class ContentClient implements ContentClientInterface
             $headers['X-SMP-CACHE-DISABLE'] = 'true';
         }
 
-        $this->defaultHeaders = $headers;
+        $this->httpClient = $httpClient->withOptions(['headers' => $headers]);
     }
 
     /**
@@ -42,13 +41,9 @@ final readonly class ContentClient implements ContentClientInterface
     {
         $correlationId ??= $options['headers']['X-Correlation-ID'] ?? null;
 
-        if (null !== $correlationId && !isset($options['headers']['X-Correlation-ID'])) {
+        if (null !== $correlationId) {
             $options['headers']['X-Correlation-ID'] = $correlationId;
         }
-
-        $options['headers'] = isset($options['headers'])
-            ? $options['headers'] + $this->defaultHeaders
-            : $this->defaultHeaders;
 
         $options['auth_bearer'] ??= $this->authenticator->getToken();
 

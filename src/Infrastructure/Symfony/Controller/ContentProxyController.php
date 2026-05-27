@@ -63,9 +63,9 @@ final readonly class ContentProxyController
         );
 
         return new Response(
-            $s365Response->content,
-            $s365Response->statusCode,
-            self::filterHeaders($s365Response->headers),
+            content: $s365Response->content,
+            status: $s365Response->statusCode,
+            headers: self::filterHeaders($s365Response->headers),
         );
     }
 

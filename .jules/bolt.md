@@ -51,3 +51,6 @@
 ## 2025-05-14 - [Closure Optimization]
 **Learning:** Captured variables in closures should be as minimal as possible. Pre-calculating values (like current time) outside the closure and then using them inside ensures that every invocation of the closure uses the same base data and avoids redundant system calls.
 **Action:** Minimize and refine closure captures for hot-path logic.
+## 2025-05-14 - [Scoped HttpClients]
+**Learning:** Using `withOptions()` to create a scoped HttpClient for default headers is more efficient than manual array merging in every request method. However, this may require updating mocks in unit tests to handle the additional `withOptions()` call.
+**Action:** Use scoped clients via `withOptions()` for persistent configuration.

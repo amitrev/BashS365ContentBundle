@@ -27,6 +27,7 @@ class ContentClientTest extends TestCase
 
         // Content http client mock: we assert this one gets the X-Correlation-ID header
         $contentHttpClient = $this->createMock(HttpClientInterface::class);
+        $contentHttpClient->method('withOptions')->willReturnSelf();
 
         $contentResponse = $this->createMock(ResponseInterface::class);
         $contentResponse->method('getStatusCode')->willReturn(200);
