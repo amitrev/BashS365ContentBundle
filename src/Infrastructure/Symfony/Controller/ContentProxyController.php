@@ -16,6 +16,17 @@ use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
 #[AsController]
 final readonly class ContentProxyController
 {
+    private const STRIP_HEADERS = [
+        'content-encoding' => 1,
+        'transfer-encoding' => 1,
+        'content-length' => 1,
+    ];
+
+    private const METHODS_WITHOUT_BODY = [
+        'GET' => 1,
+        'HEAD' => 1,
+    ];
+
     public function __construct(
         private ContentClientInterface $contentClient,
     ) {
@@ -28,27 +39,33 @@ final readonly class ContentProxyController
      */
     public function __invoke(Request $request, string $endpoint): Response
     {
-        if (str_starts_with($endpoint, 'oauth') || str_contains($endpoint, '..')) {
+        if (\str_starts_with($endpoint, 'oauth') || \str_contains($endpoint, '..')) {
             throw new S365ContentException('Invalid or restricted endpoint');
         }
 
+        $method = $request->getMethod();
+        $options = [];
+
+        if (!isset(self::METHODS_WITHOUT_BODY[$method])) {
+            $options['headers']['Content-Type'] = $request->headers->get('Content-Type', 'application/json');
+            $options['body'] = static fn () => $request->getContent(true);
+        }
+
+        if ($query = $request->query->all()) {
+            $options['query'] = $query;
+        }
+
         $s365Response = $this->contentClient->forward(
-            $request->getMethod(),
-            $endpoint,
-            [
-                'body' => $request->getContent(),
-                'headers' => [
-                    'Content-Type' => $request->headers->get('Content-Type', 'application/json'),
-                    'X-Correlation-ID' => $request->headers->get('X-Correlation-ID'),
-                ],
-                'query' => $request->query->all(),
-            ],
+            method: $method,
+            url: $endpoint,
+            options: $options,
+            correlationId: $request->headers->get('X-Correlation-ID'),
         );
 
         return new Response(
-            $s365Response->getContent(),
-            $s365Response->getStatusCode(),
-            $this->filterHeaders($s365Response->getHeaders()),
+            content: $s365Response->content,
+            status: $s365Response->statusCode,
+            headers: self::filterHeaders($s365Response->headers),
         );
     }
 
@@ -57,14 +74,8 @@ final readonly class ContentProxyController
      *
      * @return array<string, string[]>
      */
-    private function filterHeaders(array $headers): array
+    private static function filterHeaders(array $headers): array
     {
-        unset(
-            $headers['content-encoding'],
-            $headers['transfer-encoding'],
-            $headers['content-length'],
-        );
-
-        return $headers;
+        return \array_diff_key($headers, self::STRIP_HEADERS);
     }
 }

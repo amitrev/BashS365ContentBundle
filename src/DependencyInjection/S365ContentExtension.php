@@ -49,5 +49,6 @@ class S365ContentExtension extends Extension
         $authDefinition->setArgument('$clientId', $config['client_id']);
         $authDefinition->setArgument('$clientSecret', $config['client_secret']);
         $authDefinition->setArgument('$ttlCachedToken', $config['ttl_token']);
+        $authDefinition->setArgument('$projectPrefix', $config['project']);
     }
 }

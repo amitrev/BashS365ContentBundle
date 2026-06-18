@@ -14,7 +14,6 @@
     "symfony/framework-bundle": "^7.4",
     "symfony/http-client": "^7.4",
     "symfony/cache": "^7.4",
-    "symfony/uid": "^7.4",
     "symfony/yaml": "^7.4",
     "symfony/config": "^7.4",
     "symfony/dependency-injection": "^7.4"

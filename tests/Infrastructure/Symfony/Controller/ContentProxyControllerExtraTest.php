@@ -30,7 +30,15 @@ class ContentProxyControllerExtraTest extends TestCase
                 'POST',
                 'endpoint',
                 $this->callback(function ($options) {
-                    return isset($options['body'], $options['headers']['Content-Type']) && '{"foo":"bar"}' === $options['body'];
+                    $body = $options['body'];
+                    if (\is_callable($body)) {
+                        $body = $body();
+                    }
+                    if (\is_resource($body)) {
+                        $body = \stream_get_contents($body);
+                    }
+
+                    return isset($options['body'], $options['headers']['Content-Type']) && '{"foo":"bar"}' === $body;
                 }),
             )
             ->willReturn(new S365Response('{"ok":true}', 201, ['x-custom' => ['v']]));

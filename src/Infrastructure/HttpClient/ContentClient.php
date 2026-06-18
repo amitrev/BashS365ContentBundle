@@ -13,13 +13,25 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 final readonly class ContentClient implements ContentClientInterface
 {
+    private readonly HttpClientInterface $httpClient;
+
     public function __construct(
-        private HttpClientInterface $httpClient,
-        private ContentAuthenticator $authenticator,
-        #[Target('s365_content')] private LoggerInterface $logger,
-        private string $project,
-        private bool $disableCache,
+        HttpClientInterface $httpClient,
+        private readonly ContentAuthenticator $authenticator,
+        #[Target('s365_content')] private readonly LoggerInterface $logger,
+        string $project,
+        bool $disableCache,
     ) {
+        $headers = [
+            'Project' => $project,
+            'Accept' => 'application/json',
+        ];
+
+        if ($disableCache) {
+            $headers['X-SMP-CACHE-DISABLE'] = 'true';
+        }
+
+        $this->httpClient = $httpClient->withOptions(['headers' => $headers]);
     }
 
     /**
@@ -27,40 +39,34 @@ final readonly class ContentClient implements ContentClientInterface
      */
     public function forward(string $method, string $url, array $options = [], ?string $correlationId = null): S365Response
     {
-        $defaultOptions = [
-            'auth_bearer' => $this->authenticator->getToken(),
-            'headers' => [
-                'Project' => $this->project,
-                'Accept' => 'application/json',
-            ],
-        ];
+        $correlationId ??= $options['headers']['X-Correlation-ID'] ?? null;
 
-        if ($this->disableCache) {
-            $defaultOptions['headers']['X-SMP-CACHE-DISABLE'] = 'true';
+        if (null !== $correlationId) {
+            $options['headers']['X-Correlation-ID'] = $correlationId;
         }
 
-        if ($correlationId) {
-            $defaultOptions['headers']['X-Correlation-ID'] = $correlationId;
-        }
-
-        $finalOptions = array_merge_recursive($defaultOptions, $options);
+        $options['auth_bearer'] ??= $this->authenticator->getToken();
 
         try {
-            $response = $this->httpClient->request($method, $url, $finalOptions);
+            $response = $this->httpClient->request($method, $url, $options);
 
             if (401 === $response->getStatusCode()) {
                 $this->authenticator->forceRefreshToken();
-                $finalOptions['auth_bearer'] = $this->authenticator->getToken();
-                $response = $this->httpClient->request($method, $url, $finalOptions);
+                $options['auth_bearer'] = $this->authenticator->getToken();
+                $response = $this->httpClient->request($method, $url, $options);
             }
 
             return new S365Response(
-                $response->getContent(false),
-                $response->getStatusCode(),
-                $response->getHeaders(false),
+                content: $response->getContent(false),
+                statusCode: $response->getStatusCode(),
+                headers: $response->getHeaders(false),
             );
         } catch (\Throwable $e) {
-            $this->logger->error('S365 API Transport Error', ['url' => $url, 'correlation_id' => $correlationId, 'error' => $e->getMessage()]);
+            $this->logger->error('S365 API Transport Error', [
+                'url' => $url,
+                'correlation_id' => $correlationId,
+                'error' => $e->getMessage(),
+            ]);
             throw new S365CommunicationException('Transport error for '.$url, 0, $e);
         }
     }
